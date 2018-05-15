@@ -22,17 +22,17 @@ Run the following command to install the BuildVu C# Client in your project:
 
 Setup the converter details by creating a new `BuildVu` object:
 ```c#
-using 'BuildVu';
-buildvu = new BuildVu('localhost:8080/microservice-example');
+using BuildVuCSharpClient;
+BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
 ```
 
-You can now convert files by calling `convert`:
+You can now convert files by calling `Convert`:
 ```c#
 // returns a URL where you can view the converted output in your web browser
-var outputURL = buildvu.Convert('/path/to/input/file');
+var outputURL = buildvu.Convert("/path/to/input/file");
 
 // you can optionally specify a directory to download the converted output to
-buildvu.convert('/path/to/input/file', '/path/to/output/dir');
+buildvu.Convert("/path/to/input/file", "/path/to/output/dir");
 ```
 
 See `example_usage.cs` for examples.
