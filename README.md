@@ -22,7 +22,7 @@ Run the following command to install the BuildVu C# Client in your project:
 
 Setup the converter details by creating a new `BuildVu` object:
 ```c#
-using 'buildvu';
+using 'BuildVu';
 buildvu = new BuildVu('localhost:8080/microservice-example');
 ```
 
