@@ -1,0 +1,185 @@
+﻿/**
+Copyright 2018 IDRsolutions
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Main class used to interact with the buildvu web app
+For detailed usage instructions, see the GitHub repository:
+https://github.com/idrsolutions/buildvu-dotnet-client
+**/
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Threading;
+using Newtonsoft.Json;
+using RestSharp;
+using RestSharp.Extensions;
+
+namespace buildvu_csharp_client
+{
+    /// <summary>
+    /// Used to interact with IDRsolutions' BuildVu web service
+    /// For detailed usage instructions, see GitHub[https://github.com/idrsolutions/buildvu-csharp-client]
+    /// </summary>
+    public class BuildVu
+    {
+        private readonly string _baseEndpoint;
+        private readonly string _endpoint;
+        private readonly int _requestTimeout;
+        private readonly int _responseTimeout;
+        private readonly int _conversionTimeout;
+        private readonly RestClient _restClient;
+
+        /// <summary>
+        /// Constructor, setup the converter details.
+        /// </summary>
+        /// <param name="url">string, the URL of the BuildVu web service.</param>
+        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out. Set to 30
+        /// by default.</param>
+        /// <param name="requestTimeout">int, ???. Set to 10 by default.</param>
+        /// <param name="responseTimeout">int, ???. Set to 20 by default.</param>
+        public BuildVu(string url, int conversionTimeout = 30, int requestTimeout = 10, int responseTimeout = 20)
+        {
+            _baseEndpoint = url;
+            _endpoint = "buildvu";
+            _requestTimeout = requestTimeout;
+            _responseTimeout = responseTimeout;
+            _conversionTimeout = conversionTimeout;
+            _restClient = new RestClient(_baseEndpoint);
+        }
+
+        /// <summary>
+        /// Converts the given file and returns the URL where the output can be previewed online. If the
+        /// output_file_path parameter is also passed in, a copy of the output will be downloaded to the specified
+        /// location.
+        /// </summary>
+        /// <param name="inputFilePath">string, the location of the PDF to convert, i.e 'path/to/input.pdf'</param>
+        /// <param name="outputFilePath">string, (optional) the directory the output will be saved in,
+        /// i.e 'path/to/output/dir'</param>
+        /// <returns>string, the URL where the output can be previewed online</returns>
+        public string Convert(string inputFilePath, string outputFilePath = null)
+        {
+            // Upload file and get conversion ID
+            string uuid = Upload(inputFilePath);
+
+            // Define now so we can access response content outside of loop
+            Dictionary<string, string> responseContent;
+
+            // Check conversion status once every second until complete or error / timeout
+            var i = 0;
+
+            while (true)
+            {
+                Thread.Sleep(1000);
+
+                string rawContent = PollStatus(uuid).Content;
+                responseContent = JsonConvert.DeserializeObject<Dictionary<string, string>>(rawContent);
+
+                if (responseContent["state"] == "processed")
+                {
+                    break;
+                }
+
+                if (responseContent["state"] == "error")
+                {
+                    throw new Exception("Server error getting conversion status, see server logs for details");
+                }
+
+                if (i == _conversionTimeout)
+                {
+                    throw new Exception("Failed: File took longer than " + _conversionTimeout + " seconds to convert.");
+                }
+
+                i++;
+            }
+
+            // Download output
+            if (outputFilePath != null)
+            {
+                string downloadUrl = _baseEndpoint + '/' + responseContent["downloadPath"];
+                outputFilePath += '/' + Path.GetFileNameWithoutExtension(inputFilePath) + ".zip";
+                Download(downloadUrl, outputFilePath);
+            }
+
+            return _baseEndpoint + '/' + responseContent["previewPath"];
+        }
+
+        private string Upload(string inputFilePath)
+        {
+            var request = new RestRequest(_endpoint, Method.POST) { Resource = "buildvu" };
+            request.AddFile("file", inputFilePath);
+
+            var response = _restClient.Execute(request);
+            if (response.ErrorException != null)
+            {
+                throw new Exception("Error uploading file:\n" + response.ErrorException.GetType() + "\n"
+                                    + response.ErrorMessage);
+            }
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Error uploading file:\n Server returned response\n" + response.StatusCode + " - "
+                                    + response.StatusDescription);
+            }
+
+            var content = response.Content;
+            Dictionary<string, string> parsedResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+
+            if (parsedResponse["uuid"] == null)
+            {
+                throw new Exception("Error uploading file:\nServer returned null UUID");
+            }
+
+            return parsedResponse["uuid"];
+        }
+
+        private IRestResponse PollStatus(string uuid)
+        {
+            var request = new RestRequest(_endpoint, Method.GET) { Resource = "buildvu" };
+            request.AddParameter("uuid", uuid);
+
+            var response = _restClient.Execute(request);
+
+            if (response.ErrorException != null)
+            {
+                throw new Exception("Error checking conversion status:\n" + response.ErrorException.GetType() + "\n"
+                                    + response.ErrorMessage);
+            }
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Error checking conversion status:\n Server returned response\n"
+                                    + response.StatusCode + " - " + response.StatusDescription);
+            }
+
+            return response;
+        }
+
+        private void Download(string downloadUrl, string outputFilePath)
+        {
+            try
+            {
+                var request = new RestRequest(downloadUrl, Method.GET);
+                _restClient.DownloadData(request).SaveAs(outputFilePath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+    }
+}
