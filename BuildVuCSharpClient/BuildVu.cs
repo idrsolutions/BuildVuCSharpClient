@@ -109,12 +109,12 @@ namespace buildvu_csharp_client
             // Download output
             if (outputFilePath != null)
             {
-                string downloadUrl = _baseEndpoint + '/' + responseContent["downloadPath"];
+                string downloadUrl = responseContent["downloadPath"];
                 outputFilePath += '/' + Path.GetFileNameWithoutExtension(inputFilePath) + ".zip";
                 Download(downloadUrl, outputFilePath);
             }
 
-            return _baseEndpoint + '/' + responseContent["previewPath"];
+            return responseContent["previewPath"];
         }
 
         private string Upload(string inputFilePath)
