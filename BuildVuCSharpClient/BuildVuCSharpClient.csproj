@@ -14,7 +14,7 @@
     <PackageTags>idrsolutions pdf html html5 convert converter buildvu microservice example web application server API client</PackageTags>
     <PackageReleaseNotes>Update for downloadPath and previewPath now including server URL in response</PackageReleaseNotes>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <Version>1.1.0</Version>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
