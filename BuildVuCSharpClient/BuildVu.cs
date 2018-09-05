@@ -72,7 +72,6 @@ namespace buildvu_csharp_client
         /// <param name="inputFilePath">string, the location of the PDF to convert, i.e 'path/to/input.pdf'</param>
         /// <param name="outputFilePath">string, (optional) the directory the output will be saved in,
         /// i.e 'path/to/output/dir'</param>
-        /// <param name="inputType">string, (optional) The type of input of inputFilePath</param>
         /// <returns>string, the URL where the output can be previewed online</returns>
         public string Convert(string inputFilePath, string outputFilePath = null, string inputType = UPLOAD)
         {
@@ -127,17 +126,11 @@ namespace buildvu_csharp_client
 
             request.AddParameter("input", inputType);
 
-            if (inputType == UPLOAD)
+            switch (inputType)
             {
-                request.AddFile("file", inputFilePath);
-            }
-            else if (inputType == DOWNLOAD)
-            {
-                request.AddParameter("url", inputFilePath);
-            }
-            else
-            {
-                throw new Exception("Invalid input type");
+                case UPLOAD: request.AddFile("file", inputFilePath); break;
+                case DOWNLOAD: request.AddParameter("url", inputFilePath); break;
+                default: throw new Exception("Invalid input type");
             }
 
             var response = _restClient.Execute(request);
@@ -149,6 +142,7 @@ namespace buildvu_csharp_client
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                Console.Out.WriteLine(response.Content);
                 throw new Exception("Error uploading file:\n Server returned response\n" + response.StatusCode + " - "
                                     + response.StatusDescription);
             }
