@@ -149,7 +149,6 @@ namespace buildvu_csharp_client
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                Console.Out.WriteLine(response.Content);
                 throw new Exception("Error uploading file:\n Server returned response\n" + response.StatusCode + " - "
                                     + response.StatusDescription);
             }
