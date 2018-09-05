@@ -2,7 +2,7 @@
 
 BuildVu C# Client is the C# API for IDRSolution's [BuildVu Microservice Example](https://github.com/idrsolutions/buildvu-microservice-example).
 
-It functions as an easy to use, plug and play library that lets you use [BuildVu](https://www.idrsolutions.com/buildvu/) from C#. 
+It functions as an easy to use, plug and play library that lets you use [BuildVu](https://www.idrsolutions.com/buildvu/) from C#.
 
 -----
 
@@ -29,7 +29,8 @@ BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
 You can now convert files by calling `Convert`:
 ```c#
 // returns a URL where you can view the converted output in your web browser
-var outputURL = buildvu.Convert("/path/to/input/file");
+var outputURL = buildvu.Convert("/path/to/input/file"); // File upload
+var outputURL = buildvu.Convert("http://path.to/file.pdf", inputType: BuildVu.DOWNLOAD); // File located at url
 
 // you can optionally specify a directory to download the converted output to
 buildvu.Convert("/path/to/input/file", "/path/to/output/dir");
