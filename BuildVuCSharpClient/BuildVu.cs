@@ -128,9 +128,14 @@ namespace buildvu_csharp_client
 
             switch (inputType)
             {
-                case UPLOAD: request.AddFile("file", inputFilePath); break;
-                case DOWNLOAD: request.AddParameter("url", inputFilePath); break;
-                default: throw new Exception("Invalid input type");
+                case UPLOAD:
+                    request.AddFile("file", inputFilePath);
+                    break;
+                case DOWNLOAD:
+                    request.AddParameter("url", inputFilePath);
+                    break;
+                default:
+                    throw new Exception("Invalid input type");
             }
 
             var response = _restClient.Execute(request);
