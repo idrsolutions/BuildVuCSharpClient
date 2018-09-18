@@ -1,4 +1,4 @@
-﻿/**
+/**
 Copyright 2018 IDRsolutions
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,9 @@ namespace buildvu_csharp_client
     /// </summary>
     public class BuildVu
     {
+        public const string DOWNLOAD = "download";
+        public const string UPLOAD = "upload";
+
         private readonly string _baseEndpoint;
         private readonly string _endpoint;
         private readonly int _requestTimeout;
@@ -70,10 +73,10 @@ namespace buildvu_csharp_client
         /// <param name="outputFilePath">string, (optional) the directory the output will be saved in,
         /// i.e 'path/to/output/dir'</param>
         /// <returns>string, the URL where the output can be previewed online</returns>
-        public string Convert(string inputFilePath, string outputFilePath = null)
+        public string Convert(string inputFilePath, string outputFilePath = null, string inputType = UPLOAD)
         {
             // Upload file and get conversion ID
-            string uuid = Upload(inputFilePath);
+            string uuid = Upload(inputFilePath, inputType);
 
             // Define now so we can access response content outside of loop
             Dictionary<string, string> responseContent;
@@ -117,10 +120,23 @@ namespace buildvu_csharp_client
             return responseContent["previewUrl"];
         }
 
-        private string Upload(string inputFilePath)
+        private string Upload(string inputFilePath, string inputType)
         {
             var request = new RestRequest(_endpoint, Method.POST) { Resource = "buildvu" };
-            request.AddFile("file", inputFilePath);
+
+            request.AddParameter("input", inputType);
+
+            switch (inputType)
+            {
+                case UPLOAD:
+                    request.AddFile("file", inputFilePath);
+                    break;
+                case DOWNLOAD:
+                    request.AddParameter("url", inputFilePath);
+                    break;
+                default:
+                    throw new Exception("Invalid input type");
+            }
 
             var response = _restClient.Execute(request);
             if (response.ErrorException != null)
@@ -131,6 +147,7 @@ namespace buildvu_csharp_client
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                Console.Out.WriteLine(response.Content);
                 throw new Exception("Error uploading file:\n Server returned response\n" + response.StatusCode + " - "
                                     + response.StatusDescription);
             }
