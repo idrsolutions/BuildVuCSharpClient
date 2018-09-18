@@ -9,12 +9,12 @@
     <Product>BuildVu C# Client</Product>
     <Description>The BuildVu C# Client is the C# API for IDRsolutions' BuildVu Microservice Example</Description>
     <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/idrsolutions/buildvu-csharp-client</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/idrsolutions/buildvu-csharp-client</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/idrsolutions/BuildVuCSharpClient</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/idrsolutions/BuildVuCSharpClient</RepositoryUrl>
     <PackageTags>idrsolutions pdf html html5 convert converter buildvu microservice example web application server API client</PackageTags>
-    <PackageReleaseNotes>Update for downloadPath and previewPath now including server URL in response</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated for server API now taking different kinds of input</PackageReleaseNotes>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
