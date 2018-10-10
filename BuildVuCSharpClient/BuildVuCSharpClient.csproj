@@ -7,14 +7,16 @@
     <Authors>Rob Foley</Authors>
     <Company>IDRsolutions</Company>
     <Product>BuildVu C# Client</Product>
-    <Description>The BuildVu C# Client is the C# API for IDRsolutions' BuildVu Microservice Example</Description>
+    <Description>Convert PDF to HTML5 or SVG with C#, using the BuildVu C# Client to interact with IDRsolutions' BuildVu Microservice Example.
+
+The BuildVu Microservice Example is an open source project that allows you to convert PDF to HTML5 or SVG by running BuildVu as an online service. For documentation and usage examples, check out our GitHub page.</Description>
     <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/idrsolutions/BuildVuCSharpClient</PackageProjectUrl>
     <RepositoryUrl>https://github.com/idrsolutions/BuildVuCSharpClient</RepositoryUrl>
     <PackageTags>idrsolutions pdf html html5 convert converter buildvu microservice example web application server API client</PackageTags>
-    <PackageReleaseNotes>Updated for server API now taking different kinds of input</PackageReleaseNotes>
+    <PackageReleaseNotes>SEO updates to README &amp; NuGet package</PackageReleaseNotes>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <Version>2.1.1</Version>
+    <Version>2.1.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

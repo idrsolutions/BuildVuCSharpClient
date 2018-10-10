@@ -1,8 +1,8 @@
 # BuildVu C# Client #
 
-BuildVu C# Client is the C# API for IDRSolution's [BuildVu Microservice Example](https://github.com/idrsolutions/buildvu-microservice-example).
+Convert PDF to HTML5 or SVG with C#, using the BuildVu C# Client to interact with IDRsolutions' [BuildVu Microservice Example](https://github.com/idrsolutions/buildvu-microservice-example).
 
-It functions as an easy to use, plug and play library that lets you use [BuildVu](https://www.idrsolutions.com/buildvu/) from C#.
+The BuildVu Microservice Example is an open source project that allows you to convert PDF to HTML5 or SVG by running [BuildVu](https://www.idrsolutions.com/buildvu/) as an online service.
 
 -----
 
@@ -29,11 +29,13 @@ BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
 You can now convert files by calling `Convert`:
 ```c#
 // returns a URL where you can view the converted output in your web browser
-var outputURL = buildvu.Convert("/path/to/input/file"); // File upload
-var outputURL = buildvu.Convert("http://path.to/file.pdf", inputType: BuildVu.DOWNLOAD); // File located at url
+var outputURL = buildvu.Convert("/path/to/input/file");
 
 // you can optionally specify a directory to download the converted output to
 buildvu.Convert("/path/to/input/file", "/path/to/output/dir");
+
+// alternatively, you can specify a URL as input instead of uploading a file
+var outputURL = buildvu.Convert("http://path.to/file.pdf", inputType: BuildVu.DOWNLOAD);
 ```
 
 See `example_usage.cs` for examples.
