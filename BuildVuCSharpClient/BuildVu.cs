@@ -42,24 +42,42 @@ namespace buildvu_csharp_client
         private readonly string _baseEndpoint;
         private readonly string _endpoint;
         private readonly int _requestTimeout;
-        private readonly int _responseTimeout;
         private readonly int _conversionTimeout;
         private readonly RestClient _restClient;
 
         /// <summary>
+        /// DEPRECATED - Parameter responseTimeout is not used and will be removed in a future release.
         /// Constructor, setup the converter details.
         /// </summary>
         /// <param name="url">string, the URL of the BuildVu web service.</param>
-        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out. Set to 30
-        /// by default.</param>
-        /// <param name="requestTimeout">int, ???. Set to 10 by default.</param>
-        /// <param name="responseTimeout">int, ???. Set to 20 by default.</param>
-        public BuildVu(string url, int conversionTimeout = 30, int requestTimeout = 10, int responseTimeout = 20)
+        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out the conversion. 
+        /// Set to 30s by default.</param>
+        /// <param name="requestTimeout">int, (optional) the time to wait (in milliseconds) before timing out each request. 
+        /// Set to 60000ms (60s) by default.</param>
+        /// <param name="responseTimeout"> DEPRECATED & NOT USED </param>
+        [Obsolete("Parameter responseTimeout is not used and will be removed in a future release.")]
+        public BuildVu(string url, int conversionTimeout = 30, int requestTimeout = 60000, int responseTimeout = 0)
         {
             _baseEndpoint = url;
             _endpoint = "buildvu";
             _requestTimeout = requestTimeout;
-            _responseTimeout = responseTimeout;
+            _conversionTimeout = conversionTimeout;
+            _restClient = new RestClient(_baseEndpoint);
+        }
+
+        /// <summary>
+        /// Constructor, setup the converter details
+        /// </summary>
+        /// <param name="url">string, the URL of the BuildVu web service.</param>
+        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out the conversion. 
+        /// Set to 30s by default.</param>
+        /// <param name="requestTimeout">int, (optional) the time to wait (in milliseconds) before timing out each request. 
+        /// Set to 60000ms (60s) by default.</param>
+        public BuildVu(string url, int conversionTimeout = 30, int requestTimeout = 60000)
+        {
+            _baseEndpoint = url;
+            _endpoint = "buildvu";
+            _requestTimeout = requestTimeout;
             _conversionTimeout = conversionTimeout;
             _restClient = new RestClient(_baseEndpoint);
         }
@@ -83,7 +101,6 @@ namespace buildvu_csharp_client
 
             // Check conversion status once every second until complete or error / timeout
             var i = 0;
-
             while (true)
             {
                 Thread.Sleep(1000);
@@ -122,8 +139,12 @@ namespace buildvu_csharp_client
 
         private string Upload(string inputFilePath, string inputType)
         {
-            var request = new RestRequest(_endpoint, Method.POST) { Resource = "buildvu" };
-
+            var request = new RestRequest(_endpoint)
+            {
+                Method = Method.POST,
+                Resource = "buildvu",
+                Timeout = _requestTimeout
+            };
             request.AddParameter("input", inputType);
 
             switch (inputType)
@@ -135,7 +156,7 @@ namespace buildvu_csharp_client
                     request.AddParameter("url", inputFilePath);
                     break;
                 default:
-                    throw new Exception("Invalid input type");
+                    throw new Exception("Error processing request:\nInvalid input type '" + inputType + "'");
             }
 
             var response = _restClient.Execute(request);
@@ -148,7 +169,7 @@ namespace buildvu_csharp_client
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 Console.Out.WriteLine(response.Content);
-                throw new Exception("Error uploading file:\n Server returned response\n" + response.StatusCode + " - "
+                throw new Exception("Error uploading file:\nServer returned response\n" + response.StatusCode + " - "
                                     + response.StatusDescription);
             }
 
@@ -165,7 +186,12 @@ namespace buildvu_csharp_client
 
         private IRestResponse PollStatus(string uuid)
         {
-            var request = new RestRequest(_endpoint, Method.GET) { Resource = "buildvu" };
+            var request = new RestRequest(_endpoint)
+            {
+                Method = Method.GET,
+                Resource = "buildvu",
+                Timeout = _requestTimeout
+            };
             request.AddParameter("uuid", uuid);
 
             var response = _restClient.Execute(request);
@@ -194,8 +220,7 @@ namespace buildvu_csharp_client
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                throw new Exception("Error downloading conversion output:\n" + e.Message);
             }
         }
     }
