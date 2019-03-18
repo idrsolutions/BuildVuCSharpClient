@@ -16,7 +16,7 @@ limitations under the License.
 
 Main class used to interact with the buildvu web app
 For detailed usage instructions, see the GitHub repository:
-https://github.com/idrsolutions/buildvu-dotnet-client
+https://github.com/idrsolutions/BuildVuCSharpClient
 **/
 
 using System;
@@ -32,7 +32,7 @@ namespace buildvu_csharp_client
 {
     /// <summary>
     /// Used to interact with IDRsolutions' BuildVu web service
-    /// For detailed usage instructions, see GitHub[https://github.com/idrsolutions/buildvu-csharp-client]
+    /// For detailed usage instructions, see GitHub[https://github.com/idrsolutions/BuildVuCSharpClient]
     /// </summary>
     public class BuildVu
     {
@@ -45,25 +45,8 @@ namespace buildvu_csharp_client
         private readonly int _conversionTimeout;
         private readonly RestClient _restClient;
 
-        /// <summary>
-        /// DEPRECATED - Parameter responseTimeout is not used and will be removed in a future release.
-        /// Constructor, setup the converter details.
-        /// </summary>
-        /// <param name="url">string, the URL of the BuildVu web service.</param>
-        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out the conversion. 
-        /// Set to 30s by default.</param>
-        /// <param name="requestTimeout">int, (optional) the time to wait (in milliseconds) before timing out each request. 
-        /// Set to 60000ms (60s) by default.</param>
-        /// <param name="responseTimeout"> DEPRECATED & NOT USED </param>
-        [Obsolete("Parameter responseTimeout is not used and will be removed in a future release.")]
-        public BuildVu(string url, int conversionTimeout = 30, int requestTimeout = 60000, int responseTimeout = 0)
-        {
-            _baseEndpoint = url;
-            _endpoint = "buildvu";
-            _requestTimeout = requestTimeout;
-            _conversionTimeout = conversionTimeout;
-            _restClient = new RestClient(_baseEndpoint);
-        }
+        private byte[] _file;
+        private string _fileName;
 
         /// <summary>
         /// Constructor, setup the converter details
@@ -80,21 +63,22 @@ namespace buildvu_csharp_client
             _requestTimeout = requestTimeout;
             _conversionTimeout = conversionTimeout;
             _restClient = new RestClient(_baseEndpoint);
+            _file = null;
+            _fileName = "";
         }
 
         /// <summary>
-        /// Converts the given file and returns the URL where the output can be previewed online. If the
-        /// output_file_path parameter is also passed in, a copy of the output will be downloaded to the specified
-        /// location.
+        /// Starts the conversion of a file and returns a dictionary with the response from the server.
+        /// Details for the parameters passed can be found at:
+        /// https://github.com/idrsolutions/buildvu-microservice-example/blob/master/API.md
         /// </summary>
-        /// <param name="inputFilePath">string, the location of the PDF to convert, i.e 'path/to/input.pdf'</param>
-        /// <param name="outputFilePath">string, (optional) the directory the output will be saved in,
-        /// i.e 'path/to/output/dir'</param>
-        /// <returns>string, the URL where the output can be previewed online</returns>
-        public string Convert(string inputFilePath, string outputFilePath = null, string inputType = UPLOAD)
+        /// <param name="parameters">Dictionary(string, string), the parameters to be passed to the server</param>
+        /// <returns>Dictionary(string, string), the response output from the server</returns>
+        public Dictionary<string, string> Convert(Dictionary<string, string> parameters)
         {
+
             // Upload file and get conversion ID
-            string uuid = Upload(inputFilePath, inputType);
+            string uuid = Upload(parameters);
 
             // Define now so we can access response content outside of loop
             Dictionary<string, string> responseContent;
@@ -108,17 +92,25 @@ namespace buildvu_csharp_client
                 string rawContent = PollStatus(uuid).Content;
                 responseContent = JsonConvert.DeserializeObject<Dictionary<string, string>>(rawContent);
 
-                if (responseContent["state"] == "processed")
+                if (responseContent.ContainsKey("state"))
+                {
+                    if (responseContent["state"] == "processed")
+                    {
+                        break;
+                    }
+
+                    if (responseContent["state"] == "error")
+                    {
+                        throw new Exception("Server error getting conversion status, see server logs for details");
+                    }
+                }
+
+                if (parameters.ContainsKey("callbackUrl"))
                 {
                     break;
                 }
 
-                if (responseContent["state"] == "error")
-                {
-                    throw new Exception("Server error getting conversion status, see server logs for details");
-                }
-
-                if (i == _conversionTimeout)
+                if (i >= _conversionTimeout)
                 {
                     throw new Exception("Failed: File took longer than " + _conversionTimeout + " seconds to convert.");
                 }
@@ -126,18 +118,53 @@ namespace buildvu_csharp_client
                 i++;
             }
 
-            // Download output
-            if (outputFilePath != null)
+            ClearFile();
+
+            if (responseContent == null)
             {
-                string downloadUrl = responseContent["downloadUrl"];
-                outputFilePath += '/' + Path.GetFileNameWithoutExtension(inputFilePath) + ".zip";
-                Download(downloadUrl, outputFilePath);
+                responseContent = new Dictionary<string, string>();
             }
 
-            return responseContent["previewUrl"];
+            return responseContent;
         }
 
-        private string Upload(string inputFilePath, string inputType)
+        /// <summary>
+        /// Prepare the provided file for a conversion with BuildVu. This method must be used if you want to use
+        /// to use the UPLOAD conversion method.
+        /// </summary>
+        /// <param name="inputFilePath">string, the location of the PDF to convert, i.e 'path/to/input.pdf'</param>
+        public void PrepareFile(string inputFilePath)
+        {
+            _file = File.ReadAllBytes(inputFilePath);
+            _fileName = Path.GetFileName(inputFilePath);
+        }
+
+        /// <summary>
+        /// Download a copy of the converted output to the specified location.
+        /// </summary>
+        /// <param name="results">Dictionary(string, string), the results dictionary produced by <see cref="Convert"></param>
+        /// <param name="outputFilePath">string, the directory the output will be saved in, i.e 'path/to/output/dir</param>
+        /// <param name="fileName">string, (optional) the preferred name of the output zip file</param>
+        public void DownloadResult(Dictionary<string, string> results, string outputFilePath, string fileName = null)
+        {
+            if (!results.ContainsKey("downloadUrl"))
+            {
+                throw new Exception("Failed: No URL to download from provided");
+            }
+
+            if (fileName != null)
+            {
+                outputFilePath += '/' + fileName + ".zip";
+            }
+            else
+            {
+                outputFilePath += '/' + Path.GetFileNameWithoutExtension(results["downloadUrl"]) + ".zip";
+            }
+            
+            Download(results["downloadUrl"], outputFilePath);
+        }
+
+        private string Upload(Dictionary<string, string> parameters)
         {
             var request = new RestRequest(_endpoint)
             {
@@ -145,18 +172,15 @@ namespace buildvu_csharp_client
                 Resource = "buildvu",
                 Timeout = _requestTimeout
             };
-            request.AddParameter("input", inputType);
 
-            switch (inputType)
+            foreach (KeyValuePair<string, string> param in parameters)
             {
-                case UPLOAD:
-                    request.AddFile("file", inputFilePath);
-                    break;
-                case DOWNLOAD:
-                    request.AddParameter("url", inputFilePath);
-                    break;
-                default:
-                    throw new Exception("Error processing request:\nInvalid input type '" + inputType + "'");
+                request.AddParameter(param.Key, param.Value);
+            }
+
+            if (_file != null && _file.Length > 0)
+            {
+                request.AddFile("file", _file, _fileName);
             }
 
             var response = _restClient.Execute(request);
@@ -176,7 +200,7 @@ namespace buildvu_csharp_client
             var content = response.Content;
             Dictionary<string, string> parsedResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
 
-            if (parsedResponse["uuid"] == null)
+            if (!parsedResponse.ContainsKey("uuid"))
             {
                 throw new Exception("Error uploading file:\nServer returned null UUID");
             }
@@ -222,6 +246,12 @@ namespace buildvu_csharp_client
             {
                 throw new Exception("Error downloading conversion output:\n" + e.Message);
             }
+        }
+
+        private void ClearFile()
+        {
+            _file = null;
+            _fileName = "";
         }
     }
 }
