@@ -18,25 +18,64 @@ Run the following command to install the BuildVu C# Client in your project:
 
 # Usage #
 
-## Basic: #
+## Basic: (Upload) #
 
 Setup the converter details by creating a new `BuildVu` object:
 ```c#
-using BuildVuCSharpClient;
+using buildvu_csharp_client;
 BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
+```
+Prepare the file to upload
+```c#
+buildvu.PrepareFile("path/to/input.pdf");
+```
+
+Set up the conversion parameters
+```c#
+Dictionary<string, string> parameters = new Dictionary<string, string>
+{
+    ["input"] = BuildVu.UPLOAD,
+    ["callbackUrl"] = "http://listener.url" //Optional
+};
 ```
 
 You can now convert files by calling `Convert`:
 ```c#
-// returns a URL where you can view the converted output in your web browser
-var outputURL = buildvu.Convert("/path/to/input/file");
+// conversionResults are the values from the servers response
+Dictionary<string, string> conversionResults = buildvu.Convert(parameters);
 
-// you can optionally specify a directory to download the converted output to
-buildvu.Convert("/path/to/input/file", "/path/to/output/dir");
-
-// alternatively, you can specify a URL as input instead of uploading a file
-var outputURL = buildvu.Convert("http://path.to/file.pdf", inputType: BuildVu.DOWNLOAD);
+// You can also specify a directory to download the converted output to:
+buildvu.DownloadResult(conversionResults, "path/to/output/dir");
 ```
+
+## Basic: (Download) #
+
+Setup the converter details by creating a new `BuildVu` object:
+```c#
+using buildvu_csharp_client;
+BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
+```
+
+Set up the conversion parameters
+```c#
+Note: You do not require to PrepareFile() if you use this configuration
+Dictionary<string, string> parameters = new Dictionary<string, string>
+{
+    ["input"] = BuildVu.DOWNLOAD,
+    ["url"] = "http://link.to/filename"
+};
+```
+
+You can now convert files by calling `Convert`:
+```c#
+// conversionResults are the values from the servers response
+Dictionary<string, string> conversionResults = buildvu.Convert(parameters);
+
+// You can also specify a directory to download the converted output to:
+buildvu.DownloadResult(conversionResults, "path/to/output/dir");
+```
+
+The parameters used are defined in the API, see [API.md](https://github.com/idrsolutions/buildvu-microservice-example/blob/master/API.md) for more details.
 
 See `example_usage.cs` for examples.
 
