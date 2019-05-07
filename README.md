@@ -25,16 +25,12 @@ Setup the converter details by creating a new `BuildVu` object:
 using buildvu_csharp_client;
 BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
 ```
-Prepare the file to upload
-```c#
-buildvu.PrepareFile("path/to/input.pdf");
-```
-
 Set up the conversion parameters
 ```c#
 Dictionary<string, string> parameters = new Dictionary<string, string>
 {
     ["input"] = BuildVu.UPLOAD,
+    ["file"] = "path/to/input.pdf",
     ["callbackUrl"] = "http://listener.url" //Optional
 };
 ```
@@ -58,7 +54,6 @@ BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
 
 Set up the conversion parameters
 ```c#
-Note: You do not require to PrepareFile() if you use this configuration
 Dictionary<string, string> parameters = new Dictionary<string, string>
 {
     ["input"] = BuildVu.DOWNLOAD,
