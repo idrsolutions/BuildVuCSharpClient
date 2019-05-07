@@ -9,9 +9,6 @@ class ExampleUsage
 
         try
         {
-            // Prepare a local file to be uploaded to the BuildVu MicroService
-            buildvu.PrepareFile("path/to/input.pdf");
-
             // Convert takes a Dictionary of the API parameters, that then get passed onto 
             // the server. For example, callbackUrl will provide a URL that you want to have
             // a request sent to when the conversion finishes.
@@ -19,11 +16,11 @@ class ExampleUsage
             Dictionary<string, string> parameters = new Dictionary<string, string>
             {
                 ["input"] = BuildVu.UPLOAD,
+                ["file"] = "path/to/input.pdf",
                 ["callbackUrl"] = "http://listener.url"
             };
 
             // Alternatively send a URL for the server to download file from
-            // Note: You do not require to PrepareFile() if you use this configuration
             /*Dictionary<string, string> parameters = new Dictionary<string, string>
             {
                 ["input"] = BuildVu.DOWNLOAD,

@@ -45,9 +45,6 @@ namespace buildvu_csharp_client
         private readonly int _conversionTimeout;
         private readonly RestClient _restClient;
 
-        private byte[] _file;
-        private string _fileName;
-
         /// <summary>
         /// Constructor, setup the converter details
         /// </summary>
@@ -63,8 +60,6 @@ namespace buildvu_csharp_client
             _requestTimeout = requestTimeout;
             _conversionTimeout = conversionTimeout;
             _restClient = new RestClient(_baseEndpoint);
-            _file = null;
-            _fileName = "";
         }
 
         /// <summary>
@@ -118,25 +113,12 @@ namespace buildvu_csharp_client
                 i++;
             }
 
-            ClearFile();
-
             if (responseContent == null)
             {
                 responseContent = new Dictionary<string, string>();
             }
 
             return responseContent;
-        }
-
-        /// <summary>
-        /// Prepare the provided file for a conversion with BuildVu. This method must be used if you want to use
-        /// to use the UPLOAD conversion method.
-        /// </summary>
-        /// <param name="inputFilePath">string, the location of the PDF to convert, i.e 'path/to/input.pdf'</param>
-        public void PrepareFile(string inputFilePath)
-        {
-            _file = File.ReadAllBytes(inputFilePath);
-            _fileName = Path.GetFileName(inputFilePath);
         }
 
         /// <summary>
@@ -173,14 +155,16 @@ namespace buildvu_csharp_client
                 Timeout = _requestTimeout
             };
 
+            if (parameters.ContainsKey("file") && parameters["file"] > 0)
+            {
+                file = File.ReadAllBytes(parameters["file"]);
+                fileName = Path.GetFileName(parameters["file"]);
+                request.AddFile("file", file, fileName);
+            }
+
             foreach (KeyValuePair<string, string> param in parameters)
             {
                 request.AddParameter(param.Key, param.Value);
-            }
-
-            if (_file != null && _file.Length > 0)
-            {
-                request.AddFile("file", _file, _fileName);
             }
 
             var response = _restClient.Execute(request);
@@ -192,7 +176,6 @@ namespace buildvu_csharp_client
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                Console.Out.WriteLine(response.Content);
                 throw new Exception("Error uploading file:\nServer returned response\n" + response.StatusCode + " - "
                                     + response.StatusDescription);
             }
@@ -246,12 +229,6 @@ namespace buildvu_csharp_client
             {
                 throw new Exception("Error downloading conversion output:\n" + e.Message);
             }
-        }
-
-        private void ClearFile()
-        {
-            _file = null;
-            _fileName = "";
         }
     }
 }
