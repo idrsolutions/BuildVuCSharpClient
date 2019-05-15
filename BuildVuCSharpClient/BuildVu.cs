@@ -155,11 +155,15 @@ namespace buildvu_csharp_client
                 Timeout = _requestTimeout
             };
 
-            if (parameters.ContainsKey("file") && parameters["file"] > 0)
+            if (parameters.ContainsKey("file"))
             {
-                file = File.ReadAllBytes(parameters["file"]);
-                fileName = Path.GetFileName(parameters["file"]);
-                request.AddFile("file", file, fileName);
+                byte[] file = File.ReadAllBytes(parameters["file"]);
+                string fileName = Path.GetFileName(parameters["file"]);
+
+                if (file.Length > 0)
+                {
+                    request.AddFile("file", file, fileName);
+                }
             }
 
             foreach (KeyValuePair<string, string> param in parameters)

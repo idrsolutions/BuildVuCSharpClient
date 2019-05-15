@@ -16,7 +16,7 @@ The BuildVu Microservice Example is an open source project that allows you to co
     <PackageTags>idrsolutions pdf html html5 convert converter buildvu microservice example web application server API client</PackageTags>
     <PackageReleaseNotes>Fully implemented customisable request timeout &amp; removed old unused timeout settings</PackageReleaseNotes>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
