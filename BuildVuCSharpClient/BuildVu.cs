@@ -168,7 +168,10 @@ namespace buildvu_csharp_client
 
             foreach (KeyValuePair<string, string> param in parameters)
             {
-                request.AddParameter(param.Key, param.Value);
+                if (!param.Key.Equals("file"))
+                {
+                    request.AddParameter(param.Key, param.Value);
+                }
             }
 
             var response = _restClient.Execute(request);
