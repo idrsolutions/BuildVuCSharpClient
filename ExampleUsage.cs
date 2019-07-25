@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using buildvu_csharp_client;
 
 class ExampleUsage
@@ -31,7 +32,7 @@ class ExampleUsage
             // in the servers response
             Dictionary<string, string> conversionResults = buildvu.Convert(parameters);
 
-            String outputUrl = conversionResults.GetValueOrDefault("previewUrl", "No output URL provided");
+            String outputUrl = conversionResults.GetValueOrDefault("downloadUrl", "No download URL provided");
 
             // You can also specify a directory to download the converted output to:
             //buildvu.DownloadResult(conversionResults, "path/to/output/dir");
