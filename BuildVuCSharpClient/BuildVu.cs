@@ -175,6 +175,10 @@ namespace buildvu_csharp_client
             }
 
             var response = _restClient.Execute(request);
+
+            var content = response.Content;
+            Dictionary<string, string> parsedResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+
             if (response.ErrorException != null)
             {
                 throw new Exception("Error uploading file:\n" + response.ErrorException.GetType() + "\n"
@@ -184,11 +188,8 @@ namespace buildvu_csharp_client
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 throw new Exception("Error uploading file:\nServer returned response\n" + response.StatusCode + " - "
-                                    + response.StatusDescription);
+                                    + parsedResponse["error"]);
             }
-
-            var content = response.Content;
-            Dictionary<string, string> parsedResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
 
             if (!parsedResponse.ContainsKey("uuid"))
             {
