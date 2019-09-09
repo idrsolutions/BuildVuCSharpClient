@@ -6,7 +6,7 @@ class ExampleUsage
 {
     static void Main(string[] args)
     {
-        var buildvu = new BuildVu("http://localhost:8080/microservice-example");
+        var buildvu = new BuildVu("http://localhost:8080/buildvu-microservice");
 
         try
         {
