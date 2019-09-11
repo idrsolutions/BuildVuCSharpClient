@@ -187,7 +187,7 @@ namespace buildvu_csharp_client
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 String errorMessage = response.ErrorMessage;
-                if (content != null)
+                if (content != null && response.ContentType.Contains("application/json"))
                 {
                     Dictionary<string, string> errorResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
                     if (errorResponse["error"] != null)
