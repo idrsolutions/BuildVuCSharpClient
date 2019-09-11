@@ -176,29 +176,9 @@ namespace buildvu_csharp_client
 
             var response = _restClient.Execute(request);
 
-            if (response.ErrorException != null)
-            {
-                throw new Exception("Error uploading file:\n" + response.ErrorException.GetType() + "\n"
-                                    + response.ErrorMessage);
-            }
+            checkResponseForErrors("Error uploading file", response);
 
             var content = response.Content;
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                String errorMessage = response.ErrorMessage;
-                if (content != null && response.ContentType.Contains("application/json"))
-                {
-                    Dictionary<string, string> errorResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
-                    if (errorResponse["error"] != null)
-                    {
-                        errorMessage = errorResponse["error"];
-                    }
-                }
-                throw new Exception("Error uploading file:\nServer returned response\n" + response.StatusCode + " - "
-                                    + errorMessage);
-            }
-
             Dictionary<string, string> parsedResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
 
             if (!parsedResponse.ContainsKey("uuid"))
@@ -221,19 +201,35 @@ namespace buildvu_csharp_client
 
             var response = _restClient.Execute(request);
 
+            checkResponseForErrors("Error checking conversion status", response);
+
+            return response;
+        }
+
+        private void checkResponseForErrors(String messageStart, IRestResponse response)
+        {
             if (response.ErrorException != null)
             {
-                throw new Exception("Error checking conversion status:\n" + response.ErrorException.GetType() + "\n"
+                throw new Exception(messageStart + ":\n" + response.ErrorException.GetType() + "\n"
                                     + response.ErrorMessage);
             }
 
+            var content = response.Content;
+
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                throw new Exception("Error checking conversion status:\n Server returned response\n"
-                                    + response.StatusCode + " - " + response.StatusDescription);
+                String errorMessage = response.ErrorMessage;
+                if (content != null && response.ContentType.Contains("application/json"))
+                {
+                    Dictionary<string, string> errorResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+                    if (errorResponse["error"] != null)
+                    {
+                        errorMessage = errorResponse["error"];
+                    }
+                }
+                throw new Exception(messageStart + ":\nServer returned response\n" + response.StatusCode + " - "
+                                    + errorMessage);
             }
-
-            return response;
         }
 
         private void Download(string downloadUrl, string outputFilePath)
