@@ -214,10 +214,9 @@ namespace buildvu_csharp_client
                                     + response.ErrorMessage);
             }
 
-            var content = response.Content;
-
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                var content = response.Content;
                 String errorMessage = response.ErrorMessage;
                 if (content != null && response.ContentType.Contains("application/json"))
                 {
