@@ -176,20 +176,30 @@ namespace buildvu_csharp_client
 
             var response = _restClient.Execute(request);
 
-            var content = response.Content;
-            Dictionary<string, string> parsedResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
-
             if (response.ErrorException != null)
             {
                 throw new Exception("Error uploading file:\n" + response.ErrorException.GetType() + "\n"
                                     + response.ErrorMessage);
             }
 
+            var content = response.Content;
+
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                String errorMessage = response.ErrorMessage;
+                if (content != null)
+                {
+                    Dictionary<string, string> errorResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+                    if (errorResponse["error"] != null)
+                    {
+                        errorMessage = errorResponse["error"];
+                    }
+                }
                 throw new Exception("Error uploading file:\nServer returned response\n" + response.StatusCode + " - "
-                                    + parsedResponse["error"]);
+                                    + errorMessage);
             }
+
+            Dictionary<string, string> parsedResponse = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
 
             if (!parsedResponse.ContainsKey("uuid"))
             {
