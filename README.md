@@ -23,7 +23,7 @@ Run the following command to install the BuildVu C# Client in your project:
 Setup the converter details by creating a new `BuildVu` object:
 ```c#
 using buildvu_csharp_client;
-BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
+BuildVu buildvu = new BuildVu("localhost:8080/buildvu-microservice");
 ```
 Set up the conversion parameters
 ```c#
@@ -49,7 +49,7 @@ buildvu.DownloadResult(conversionResults, "path/to/output/dir");
 Setup the converter details by creating a new `BuildVu` object:
 ```c#
 using buildvu_csharp_client;
-BuildVu buildvu = new BuildVu("localhost:8080/microservice-example");
+BuildVu buildvu = new BuildVu("localhost:8080/buildvu-microservice");
 ```
 
 Set up the conversion parameters
