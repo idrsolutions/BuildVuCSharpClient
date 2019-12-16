@@ -46,6 +46,12 @@ Dictionary<string, string> conversionResults = buildvu.Convert(parameters);
 buildvu.DownloadResult(conversionResults, "path/to/output/dir");
 ```
 
+If the microservice require authentication to access you can use the second BuildVU constructor:
+```c#
+using buildvu_csharp_client;
+BuildVu buildvu = new BuildVu("localhost:8080/microservice-example", "username", "password");
+```
+
 ## Basic: (Download) #
 
 Setup the converter details by creating a new `BuildVu` object:
@@ -70,6 +76,11 @@ Dictionary<string, string> conversionResults = buildvu.Convert(parameters);
 
 // You can also specify a directory to download the converted output to:
 buildvu.DownloadResult(conversionResults, "path/to/output/dir");
+```
+If the microservice require authentication to access you can use the second BuildVU constructor:
+```c#
+using buildvu_csharp_client;
+BuildVu buildvu = new BuildVu("localhost:8080/microservice-example", "username", "password");
 ```
 
 The parameters used are defined in the API, see [API.md](https://github.com/idrsolutions/buildvu-microservice-example/blob/master/API.md) for more details.

@@ -26,6 +26,7 @@ using System.Net;
 using System.Threading;
 using Newtonsoft.Json;
 using RestSharp;
+using RestSharp.Authenticators;
 using RestSharp.Extensions;
 
 namespace buildvu_csharp_client
@@ -49,9 +50,9 @@ namespace buildvu_csharp_client
         /// Constructor, setup the converter details
         /// </summary>
         /// <param name="url">string, the URL of the BuildVu web service.</param>
-        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out the conversion. 
+        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out the conversion.
         /// Set to 30s by default.</param>
-        /// <param name="requestTimeout">int, (optional) the time to wait (in milliseconds) before timing out each request. 
+        /// <param name="requestTimeout">int, (optional) the time to wait (in milliseconds) before timing out each request.
         /// Set to 60000ms (60s) by default.</param>
         public BuildVu(string url, int conversionTimeout = 30, int requestTimeout = 60000)
         {
@@ -60,6 +61,26 @@ namespace buildvu_csharp_client
             _requestTimeout = requestTimeout;
             _conversionTimeout = conversionTimeout;
             _restClient = new RestClient(_baseEndpoint);
+        }
+
+        /// <summary>
+        /// Constructor, setup the converter details allowing for authentication details
+        /// </summary>
+        /// <param name="url">string, the URL of the BuildVu web service.</param>
+        /// <param name="username">string, the Username required to connect to the BuildVu web service.</param>
+        /// <param name="password">string, the Password required to connect to the BuildVu web service.</param>
+        /// <param name="conversionTimeout">int, (optional) the time to wait (in seconds) before timing out the conversion.
+        /// Set to 30s by default.</param>
+        /// <param name="requestTimeout">int, (optional) the time to wait (in milliseconds) before timing out each request.
+        /// Set to 60000ms (60s) by default.</param>
+        public BuildVu(string url, string username, string password, int conversionTimeout = 30, int requestTimeout = 60000)
+        {
+            _baseEndpoint = url;
+            _endpoint = "buildvu";
+            _requestTimeout = requestTimeout;
+            _conversionTimeout = conversionTimeout;
+            _restClient = new RestClient(_baseEndpoint);
+            _restClient.Authenticator = new HttpBasicAuthenticator(username, password);
         }
 
         /// <summary>
@@ -142,7 +163,7 @@ namespace buildvu_csharp_client
             {
                 outputFilePath += '/' + Path.GetFileNameWithoutExtension(results["downloadUrl"]) + ".zip";
             }
-            
+
             Download(results["downloadUrl"], outputFilePath);
         }
 
