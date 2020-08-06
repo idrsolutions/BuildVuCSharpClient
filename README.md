@@ -1,3 +1,5 @@
+# THIS PACKAGE HAS BEEN DEPRECATED #
+Future development has been directed to the [idrsolutions client](https://github.com/idrsolutions/idrsolutions-csharp-client), which can be used for the same purpose. This package will receive no more updates. 
 # BuildVu C# Client #
 
 Convert PDF to HTML5 or SVG with C#, using the BuildVu C# Client to interact with IDRsolutions' [BuildVu Microservice Example](https://github.com/idrsolutions/buildvu-microservice-example).
